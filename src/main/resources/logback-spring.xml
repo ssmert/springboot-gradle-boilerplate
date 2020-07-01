@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 실행환경별 경로 -->
+    <springProfile name="loc">
+        <property name="LOG_DIR" value="logs"/>
+    </springProfile>
+
+    <!-- 파일명 설정 -->
+    <property name="SERVICE_LOG_PATH" value="${LOG_DIR}/demo-service.log"/>
+    <property name="ERROR_LOG_PATH" value="${LOG_DIR}/demo-error.log"/>
+
+    <!-- 콘솔 출력 어팬더 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <!-- 서비스 로그 어팬더 -->
+    <appender name="ServiceLogFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${SERVICE_LOG_PATH}</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${SERVICE_LOG_PATH}-%d{yyyyMMdd}.%i.log.zip</fileNamePattern>
+            <!-- file size reaches 200MB -->
+            <maxFileSize>200MB</maxFileSize>
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 에러 로그 어팬더 -->
+    <appender name="ErrorLogFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${ERROR_LOG_PATH}</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${ERROR_LOG_PATH}-%d{yyyyMMdd}.%i.log.zip</fileNamePattern>
+            <!-- file size reaches 200MB -->
+            <maxFileSize>200MB</maxFileSize>
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+<!--    &lt;!&ndash;logback listener &ndash;&gt;-->
+<!--    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>-->
+
+    <!-- ################################################################################################################ -->
+
+    <!-- logging for loc,dev -->
+    <springProfile name="loc,dev">
+        <logger name="com.example.demo" level="debug">
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="ServiceLogFileAppender"/>
+        </logger>
+
+        <!-- 스프링 프레임워크 -->
+        <logger name="org.springframework.core" level="info" additivity="false">
+            <appender-ref ref="ServiceLogFileAppender"/>
+            <appender-ref ref="ErrorLogFileAppender"/>
+        </logger>
+        <logger name="org.springframework.beans" level="info" additivity="false">
+            <appender-ref ref="ServiceLogFileAppender"/>
+            <appender-ref ref="ErrorLogFileAppender"/>
+        </logger>
+        <logger name="org.springframework.context" level="info" additivity="false">
+            <appender-ref ref="ServiceLogFileAppender"/>
+            <appender-ref ref="ErrorLogFileAppender"/>
+        </logger>
+        <logger name="org.springframework.web" level="info" additivity="false">
+            <appender-ref ref="ServiceLogFileAppender"/>
+            <appender-ref ref="ErrorLogFileAppender"/>
+        </logger>
+
+        <root level="error">
+            <appender-ref ref="ErrorLogFileAppender"/>
+        </root>
+    </springProfile>
+</configuration>
